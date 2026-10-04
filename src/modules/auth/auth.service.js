@@ -3,6 +3,7 @@ const pool = require("../../config/db");
 
 const registerUser = async (name, email, password) => {
     const normalizedEmail = email.trim().toLowerCase();
+
     const [existingUsers] = await pool.execute(
         "SELECT id FROM users WHERE email = ? LIMIT 1",
         [normalizedEmail]
@@ -65,7 +66,22 @@ const loginUser = async (email, password) => {
     };
 };
 
+const getUserById = async (userId) => {
+    const [users] = await pool.execute(
+        `
+        SELECT id, name, email, role
+        FROM users
+        WHERE id = ?
+        LIMIT 1
+        `,
+        [userId]
+    );
+
+    return users[0];
+};
+
 module.exports = {
     registerUser,
-    loginUser
+    loginUser,
+    getUserById
 };
