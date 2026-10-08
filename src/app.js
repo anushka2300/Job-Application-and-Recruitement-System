@@ -7,6 +7,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const authRoutes = require("./modules/auth/auth.routes");
 const companyRoutes = require("./modules/company/company.routes");
+const jobsRoutes = require("./modules/jobs/jobs.routes");
+const applicationRoutes = require("./modules/applications/application.routes")
 
 // Middlewares
 app.use(cors());
@@ -30,6 +32,8 @@ const startServer = async () => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/companies", companyRoutes);
+app.use("/api/jobs", jobsRoutes);
+app.use("/api", applicationRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
