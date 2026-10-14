@@ -24,7 +24,10 @@ const respondToError = (res, error, fallbackMessage) => {
 
 const createApplication = async (req, res) => {
   try {
-    const application = await applicationsService.createApplication(req.user, req.body || {});
+    const application = await applicationsService.createApplication(req.user, {
+      ...(req.body || {}),
+      resumeFile: req.file,
+    });
     return res.status(201).json({
       success: true,
       message: "Application submitted successfully",

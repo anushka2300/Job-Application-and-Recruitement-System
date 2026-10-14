@@ -2,6 +2,7 @@ const express = require("express");
 
 const authenticate = require("../../middleware/authentication");
 const authorizeRoles = require("../../middleware/authorizeRoles");
+const uploadResume = require("../../middleware/uploadMiddleware");
 const applicationController = require("./application.controller");
 
 const router = express.Router();
@@ -11,6 +12,7 @@ router.use(authenticate);
 router.post(
   "/applications",
   authorizeRoles("CANDIDATE"),
+  uploadResume,
   applicationController.createApplication,
 );
 

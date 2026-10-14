@@ -1,4 +1,5 @@
 const pool = require("../../config/db");
+const { deleteResume, uploadResume } = require("../../services/resumeService");
 
 const APPLICATION_STATUSES = [
   "APPLIED",
@@ -152,6 +153,14 @@ const createApplication = async (user, input = {}) => {
     throw createError("FORBIDDEN", "Only candidates can apply for jobs");
   }
 
+  const resumeFile = input.resumeFile;
+  if (!resumeFile || !Buffer.isBuffer(resumeFile.buffer)) {
+    throw createError("INVALID_INPUT", "A PDF resume is required");
+  }
+  if (!resumeFile.buffer.subarray(0, 5).equals(Buffer.from("%PDF-"))) {
+    throw createError("INVALID_INPUT", "Uploaded resume is not a valid PDF");
+  }
+
   const jobId = parseJobId(input.jobId ?? input.job_id);
 
   const [jobs] = await pool.execute(
@@ -176,14 +185,27 @@ const createApplication = async (user, input = {}) => {
     throw createError("ALREADY_APPLIED", "You have already applied for this job");
   }
 
-  const resumeUrl = typeof input.resumeUrl === "string" ? input.resumeUrl.trim() || null : null;
-  const coverLetter = typeof input.coverLetter === "string" ? input.coverLetter.trim() || null : null;
+  const coverLetter = typeof (input.coverLetter ?? input.cover_letter) === "string"
+    ? (input.coverLetter ?? input.cover_letter).trim() || null
+    : null;
 
-  const [result] = await pool.execute(
-    `INSERT INTO applications (job_id, candidate_id, resume_url, cover_letter, status)
-     VALUES (?, ?, ?, ?, 'APPLIED')`,
-    [jobId, user.userId, resumeUrl, coverLetter],
-  );
+  const uploadedResume = await uploadResume(resumeFile.buffer);
+
+  let result;
+  try {
+    [result] = await pool.execute(
+      `INSERT INTO applications (job_id, candidate_id, resume_url, cover_letter, status)
+       VALUES (?, ?, ?, ?, 'APPLIED')`,
+      [jobId, user.userId, uploadedResume.publicId, coverLetter],
+    );
+  } catch (error) {
+    try {
+      await deleteResume(uploadedResume.publicId);
+    } catch (cleanupError) {
+      console.error("Failed to remove resume from Cloudinary after application insert failed", cleanupError);
+    }
+    throw error;
+  }
 
   const [rows] = await pool.execute(
     `SELECT a.*, j.title AS job_title

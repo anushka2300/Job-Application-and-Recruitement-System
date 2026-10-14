@@ -29,3 +29,11 @@ The publish endpoint expects `{ "published": true }` to publish a job or
 `{ "published": false }` to return it to draft status. Job search supports
 `q`, `location`, `employment_type`, `status` (staff only), `page`, and `limit`
 query parameters. Page size defaults to 20 and is capped at 100.
+
+## Job applications
+
+Candidates submit an application with `POST /api/applications` using
+`multipart/form-data`. Include `job_id`, optional `cover_letter`, and a PDF file
+in the `resume` field. Resume files are limited to 5 MB and uploaded to
+Cloudinary; the application record stores only the Cloudinary public ID, not the
+PDF contents.
