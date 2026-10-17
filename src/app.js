@@ -27,6 +27,22 @@ const healthCheck = (req, res) => {
 
 app.get("/health", healthCheck);
 app.get("/api/health", healthCheck);
+app.get("/integration_api",async (req, res) =>{
+  try{
+    console.log("Integration API is running");
+    res.status(200).json({
+      success: true,
+      message: "Integration API is running",
+    });
+  }
+  catch(error){
+    console.error("Integration API check failed due to:", error);
+    res.status(503).json({
+      success: false,
+      message: "Integration API is not running",
+    });
+  }
+})
 
 app.get("/ready", async (req, res) => {
   try {
