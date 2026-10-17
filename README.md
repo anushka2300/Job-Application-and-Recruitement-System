@@ -1,5 +1,14 @@
 # Job-Application-and-Recruitement-System
 
+## Health checks
+
+| Method and path | Purpose | Success response |
+| --- | --- | --- |
+| `GET /health` | Confirms the API process is running; does not depend on the database. | `200` |
+| `GET /ready` | Confirms the API can reach MySQL. | `200` when ready, `503` otherwise |
+
+`GET /api/health` remains available as a compatibility alias for `GET /health`.
+
 ## Jobs API
 
 All endpoints are mounted under `/api/jobs` and require a bearer token.
