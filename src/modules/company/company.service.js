@@ -116,7 +116,6 @@ const acceptCompanyInvitation = async (token, password) => {
   const hashedPassword = await bcrypt.hash(password, 12);
   const connection = await pool.getConnection();
   let transactionStarted = false;
-  let invitationExpired = false;
 
   try {
     await connection.beginTransaction();
@@ -144,7 +143,9 @@ const acceptCompanyInvitation = async (token, password) => {
       );
       await connection.commit();
       transactionStarted = false;
-      invitationExpired = true;
+      const error = new Error("Invitation has expired");
+      error.code = "INVITATION_EXPIRED";
+      throw error;
     } else {
       const [userResult] = await connection.execute(
         `INSERT INTO users
@@ -190,11 +191,6 @@ const acceptCompanyInvitation = async (token, password) => {
     connection.release();
   }
 
-  if (invitationExpired) {
-    const error = new Error("Invitation has expired");
-    error.code = "INVITATION_EXPIRED";
-    throw error;
-  }
 };
 
 module.exports = {

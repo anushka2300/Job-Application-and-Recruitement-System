@@ -352,7 +352,10 @@ const updateApplicationStatus = async (user, applicationId, statusInput) => {
       throw createError("FORBIDDEN", "You can only update applications from your company");
     }
   } else if (user.role === "RECRUITER") {
-    if (application.created_by !== user.userId) {
+    if (
+      application.company_id !== userCompanyId ||
+      application.created_by !== user.userId
+    ) {
       throw createError("FORBIDDEN", "You can only update applications for jobs you created");
     }
   } else {

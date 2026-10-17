@@ -138,8 +138,10 @@ const validateJobFields = (input, { partial = false } = {}) => {
 
 const validateRanges = (job) => {
   if (
-    job.experience_min != null &&
-    job.experience_max != null &&
+    job.experience_min !== null &&
+    job.experience_min !== undefined &&
+    job.experience_max !== null &&
+    job.experience_max !== undefined &&
     job.experience_min > job.experience_max
   ) {
     throw createError(
@@ -148,8 +150,10 @@ const validateRanges = (job) => {
     );
   }
   if (
-    job.salary_min != null &&
-    job.salary_max != null &&
+    job.salary_min !== null &&
+    job.salary_min !== undefined &&
+    job.salary_max !== null &&
+    job.salary_max !== undefined &&
     Number(job.salary_min) > Number(job.salary_max)
   ) {
     throw createError(
@@ -167,7 +171,7 @@ const getCompanyId = async (userId) => {
   if (!users[0]) {
     throw createError("USER_NOT_FOUND", "User not found");
   }
-  if (users[0].company_id == null) {
+  if (users[0].company_id === null || users[0].company_id === undefined) {
     throw createError(
       "COMPANY_REQUIRED",
       "Your account must belong to a company to manage jobs",

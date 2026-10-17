@@ -37,7 +37,7 @@ app.get("/ready", async (req, res) => {
       checks: { database: "ok" },
     });
   } catch (error) {
-    console.error("Database readiness check failed:", error);
+    console.error("Database readiness check failed due to:", error);
     res.status(503).json({
       success: false,
       status: "not_ready",
