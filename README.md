@@ -20,6 +20,10 @@ To enable deployment:
    `npm ci`, the start command to `npm start`, and configure the app's required
    environment variables in Render. The service health check path can be
    `/health`.
+   Set `DB_SSL_CA` to the CA certificate PEM contents for the database (Render
+   environment variables can contain the PEM directly; escaped `\n` line
+   breaks are supported). For a local certificate file, set it to that file's
+   path instead.
 2. Create a deploy hook for the Render service.
 3. In the GitHub repository, add an Actions secret named
    `RENDER_DEPLOY_HOOK` with the deploy hook URL as its value. Keep this URL

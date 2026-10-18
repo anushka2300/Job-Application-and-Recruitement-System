@@ -1,12 +1,16 @@
 const mysql = require("mysql2/promise");
 const fs = require("fs");
 const path = require("path");
-const sslCaPath = process.env.DB_SSL_CA;
-const ssl = sslCaPath
+const sslCaValue = process.env.DB_SSL_CA;
+const ssl = sslCaValue
   ? {
-      ca: fs.readFileSync(path.resolve(sslCaPath), "utf8"),
+      ca: sslCaValue.includes("-----BEGIN CERTIFICATE-----")
+        ? sslCaValue.replace(/\\n/g, "\n")
+        : fs.readFileSync(path.resolve(sslCaValue), "utf8"),
     }
-  : undefined;// Create a connection pool to the MySQL database
+  : undefined;
+
+// Create a connection pool to the MySQL database.
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
