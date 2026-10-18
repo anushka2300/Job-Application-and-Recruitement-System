@@ -9,6 +9,24 @@
 
 `GET /api/health` remains available as a compatibility alias for `GET /health`.
 
+## Continuous deployment
+
+The GitHub Actions workflow deploys to Render after lint and tests pass on a
+push to `main`. Pull requests run CI but do not deploy.
+
+To enable deployment:
+
+1. Create a Render Web Service for this repository. Set the build command to
+   `npm ci`, the start command to `npm start`, and configure the app's required
+   environment variables in Render. The service health check path can be
+   `/health`.
+2. Create a deploy hook for the Render service.
+3. In the GitHub repository, add an Actions secret named
+   `RENDER_DEPLOY_HOOK` with the deploy hook URL as its value. Keep this URL
+   secret and do not commit it to the repository.
+4. Disable Render's automatic deploy-on-push setting if you want deployments
+   to happen only after this workflow's CI checks pass.
+
 ## Jobs API
 
 All endpoints are mounted under `/api/jobs` and require a bearer token.
