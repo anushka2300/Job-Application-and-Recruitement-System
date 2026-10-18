@@ -27,7 +27,7 @@ const healthCheck = (req, res) => {
 
 app.get("/health", healthCheck);
 app.get("/api/health", healthCheck);
-app.get("/integration_api_testing", async (req, res) => {
+app.get("/integration_testing", async (req, res) => {
   try {
     console.log("Integration API is running");
     res.status(200).json({
