@@ -5,6 +5,7 @@ const cors = require("cors");
 const pool = require("./config/db");
 const app = express();
 const authRoutes = require("./modules/auth/auth.routes");
+const adminRoutes = require("./modules/admin/admin.routes");
 const companyRoutes = require("./modules/company/company.routes");
 const jobsRoutes = require("./modules/jobs/jobs.routes");
 const applicationRoutes = require("./modules/applications/application.routes");
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/jobs", jobsRoutes);
 app.use("/api", applicationRoutes);

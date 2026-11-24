@@ -24,6 +24,66 @@ const createCompany = async (req, res) => {
     }
 };
 
+const getCompanies = async (_req, res) => {
+    try {
+        const companies = await companyService.getCompanies();
+        return res.status(200).json({
+            success: true,
+            data: companies
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch companies'
+        });
+    }
+};
+
+const getCompanyById = async (req, res) => {
+    try {
+        const company = await companyService.getCompanyById(req.params.id);
+        return res.status(200).json({
+            success: true,
+            data: company
+        });
+    } catch (error) {
+        if (error.code === 'INVALID_COMPANY_ID') {
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+        if (error.code === 'COMPANY_NOT_FOUND') {
+            return res.status(404).json({
+                success: false,
+                message: error.message
+            });
+        }
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch company'
+        });
+    }
+};
+
+const getCompanyInvitations = async (_req, res) => {
+    try {
+        const invitations = await companyService.getCompanyInvitations();
+        return res.status(200).json({
+            success: true,
+            data: invitations
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch company invitations'
+        });
+    }
+};
+
 const inviteAdminToCompany = async (req, res) => {
     try {
         const { companyId, adminEmail, adminName, role } = req.body;
@@ -95,6 +155,9 @@ const acceptCompanyInvitation = async (req, res) => {
 
 module.exports = {
     createCompany,
+    getCompanies,
+    getCompanyById,
+    getCompanyInvitations,
     inviteAdminToCompany,
     acceptCompanyInvitation
 };

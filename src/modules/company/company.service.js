@@ -2,6 +2,12 @@ const pool = require("../../config/db");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 
+const createError = (code, message) => {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+};
+
 const createCompany = async ({
   name,
   description,
@@ -33,6 +39,84 @@ const createCompany = async ({
     website: website || null,
     location: location || null,
   };
+};
+
+const getCompanies = async () => {
+  const [companies] = await pool.execute(
+    `SELECT id, name, location, status
+     FROM companies
+     ORDER BY name ASC, id ASC`,
+  );
+
+  return companies.map((company) => ({
+    id: company.id,
+    name: company.name,
+    location: company.location,
+    status: company.status,
+  }));
+};
+
+const getCompanyById = async (companyId) => {
+  const parsedCompanyId = Number(companyId);
+  if (!Number.isInteger(parsedCompanyId) || parsedCompanyId <= 0) {
+    throw createError("INVALID_COMPANY_ID", "A valid company ID is required");
+  }
+
+  const [companies] = await pool.execute(
+    `SELECT id, name, description, website, location
+     FROM companies
+     WHERE id = ?
+     LIMIT 1`,
+    [parsedCompanyId],
+  );
+  const company = companies[0];
+  if (!company) {
+    throw createError("COMPANY_NOT_FOUND", "Company not found");
+  }
+
+  const [admins] = await pool.execute(
+    `SELECT id, name, email
+     FROM users
+     WHERE company_id = ? AND role = 'ADMIN'
+     ORDER BY name ASC, id ASC`,
+    [parsedCompanyId],
+  );
+
+  return {
+    id: company.id,
+    name: company.name,
+    description: company.description,
+    website: company.website,
+    location: company.location,
+    admins: admins.map((admin) => ({
+      id: admin.id,
+      name: admin.name,
+      email: admin.email,
+    })),
+  };
+};
+
+const getCompanyInvitations = async () => {
+  const [invitations] = await pool.execute(
+    `SELECT invitation.id,
+            invitation.company_id AS companyId,
+            company.name AS companyName,
+            invitation.name AS adminName,
+            invitation.email AS adminEmail,
+            invitation.role,
+            CASE
+              WHEN invitation.status = 'PENDING'
+                AND invitation.expires_at <= CURRENT_TIMESTAMP
+              THEN 'EXPIRED'
+              ELSE invitation.status
+            END AS status,
+            invitation.created_at AS createdAt
+     FROM company_invitations invitation
+     JOIN companies company ON company.id = invitation.company_id
+     ORDER BY invitation.created_at DESC, invitation.id DESC`,
+  );
+
+  return invitations;
 };
 
 const inviteAdminToCompany = async (
@@ -195,6 +279,9 @@ const acceptCompanyInvitation = async (token, password) => {
 
 module.exports = {
   createCompany,
+  getCompanies,
+  getCompanyById,
+  getCompanyInvitations,
   inviteAdminToCompany,
   acceptCompanyInvitation,
 };

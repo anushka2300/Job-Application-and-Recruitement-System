@@ -9,6 +9,27 @@
 
 `GET /api/health` remains available as a compatibility alias for `GET /health`.
 
+## Platform administration API
+
+These endpoints require a bearer token for a `SUPER_ADMIN`.
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /api/admin/stats` | Returns `companiesCount`, `adminsCount`, and `pendingInvitationsCount`. |
+| `GET /api/companies` | Lists company IDs, names, locations, and statuses. |
+| `GET /api/companies/:id` | Returns company details and its associated `ADMIN` users. |
+| `GET /api/companies/invitations` | Lists company invitations without exposing invitation tokens. |
+
+Company status is stored as `ACTIVE` or `INACTIVE` and defaults to `ACTIVE`.
+Invitation status is reported as `EXPIRED` when a pending invitation has passed
+its expiry time. Stats count all companies and `ADMIN` users; pending invitation
+counts exclude expired invitations.
+
+For an existing database, apply
+[`src/database/migrations/001_add_company_status.sql`](./src/database/migrations/001_add_company_status.sql)
+once before using the company-list endpoint. New databases get the status column
+from [`src/database/schema.sql`](./src/database/schema.sql).
+
 ## Continuous deployment
 
 The GitHub Actions workflow deploys to Render after lint and tests pass on a
