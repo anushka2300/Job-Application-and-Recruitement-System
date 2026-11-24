@@ -186,6 +186,11 @@ const addListFilters = (filters, user) => {
 
   if (user.role === "CANDIDATE") {
     conditions.push("status = 'PUBLISHED'");
+  } else if (user.role === "ADMIN") {
+    conditions.push(
+      "company_id = (SELECT company_id FROM users WHERE id = ?)",
+    );
+    values.push(user.userId);
   } else if (user.role !== "SUPER_ADMIN") {
     conditions.push(
       "(status = 'PUBLISHED' OR company_id = (SELECT company_id FROM users WHERE id = ?))",
@@ -290,6 +295,11 @@ const getJobById = async (id, user) => {
 
   if (user.role === "CANDIDATE") {
     conditions.push("status = 'PUBLISHED'");
+  } else if (user.role === "ADMIN") {
+    conditions.push(
+      "company_id = (SELECT company_id FROM users WHERE id = ?)",
+    );
+    values.push(user.userId);
   } else if (user.role !== "SUPER_ADMIN") {
     conditions.push(
       "(status = 'PUBLISHED' OR company_id = (SELECT company_id FROM users WHERE id = ?))",
