@@ -19,6 +19,7 @@ These endpoints require a bearer token for a `SUPER_ADMIN`.
 | `GET /api/companies` | Lists company IDs, names, locations, and statuses. |
 | `GET /api/companies/:id` | Returns company details and its associated `ADMIN` users. |
 | `GET /api/companies/invitations` | Lists company invitations without exposing invitation tokens. |
+| `POST /api/companies/invite_admin` | Creates an admin invitation; `adminEmail` must be a valid email address. |
 
 Company status is stored as `ACTIVE` or `INACTIVE` and defaults to `ACTIVE`.
 Invitation status is reported as `EXPIRED` when a pending invitation has passed

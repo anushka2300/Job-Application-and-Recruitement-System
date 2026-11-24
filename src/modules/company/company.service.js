@@ -8,6 +8,22 @@ const createError = (code, message) => {
   return error;
 };
 
+const isValidEmail = (email) => {
+  const emailPattern =
+    /^[A-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,63}|XN--[A-Z0-9-]{2,59})$/i;
+
+  if (email.length > 254 || !emailPattern.test(email)) {
+    return false;
+  }
+
+  const [localPart, domain] = email.split("@");
+  return (
+    localPart.length <= 64 &&
+    domain.length <= 253 &&
+    domain.split(".").every((label) => label.length <= 63)
+  );
+};
+
 const createCompany = async ({
   name,
   description,
@@ -135,6 +151,12 @@ const inviteAdminToCompany = async (
     const error = new Error("Admin email is required");
     error.code = "INVALID_INVITATION";
     throw error;
+  }
+  if (!isValidEmail(adminEmail.trim())) {
+    throw createError(
+      "INVALID_INVITATION",
+      "A valid admin email address is required",
+    );
   }
   if (typeof adminName !== "string" || adminName.trim() === "") {
     const error = new Error("Admin name is required");
