@@ -36,4 +36,12 @@ const deleteResume = (publicId) => cloudinary.uploader.destroy(publicId, {
   type: "authenticated",
 });
 
-module.exports = { deleteResume, uploadResume };
+const createResumeViewUrl = (publicId) =>
+  cloudinary.utils.private_download_url(publicId, "pdf", {
+    resource_type: "raw",
+    type: "authenticated",
+    expires_at: Math.floor(Date.now() / 1000) + 300,
+    attachment: false,
+  });
+
+module.exports = { createResumeViewUrl, deleteResume, uploadResume };

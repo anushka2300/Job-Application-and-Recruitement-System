@@ -29,6 +29,12 @@ router.get(
 );
 
 router.get(
+  "/applications/:id/resume",
+  authorizeRoles("CANDIDATE", "RECRUITER", "ADMIN", "SUPER_ADMIN"),
+  applicationController.getApplicationResume,
+);
+
+router.get(
   "/applications/:id",
   authorizeRoles("CANDIDATE", "RECRUITER", "ADMIN", "SUPER_ADMIN"),
   applicationController.getApplicationById,

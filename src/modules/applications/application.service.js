@@ -1,5 +1,9 @@
 const pool = require("../../config/db");
-const { deleteResume, uploadResume } = require("../../services/resumeService");
+const {
+  createResumeViewUrl,
+  deleteResume,
+  uploadResume,
+} = require("../../services/resumeService");
 
 const APPLICATION_STATUSES = [
   "APPLIED",
@@ -103,7 +107,7 @@ const canAccessJobApplications = async (user, jobId) => {
 
 const canAccessApplication = async (user, applicationId) => {
   const [rows] = await pool.execute(
-    `SELECT a.id, a.job_id, a.candidate_id, a.status,
+    `SELECT a.id, a.job_id, a.candidate_id, a.status, a.resume_url,
             j.company_id, j.created_by,
             u.company_id AS user_company_id
      FROM applications a
@@ -321,6 +325,15 @@ const getApplicationById = async (user, applicationId) => {
   return mapApplication(rows[0]);
 };
 
+const getApplicationResumeUrl = async (user, applicationId) => {
+  const parsedId = parseApplicationId(applicationId);
+  const application = await canAccessApplication(user, parsedId);
+  if (!application.resume_url) {
+    throw createError("RESUME_NOT_FOUND", "Resume not found");
+  }
+  return createResumeViewUrl(application.resume_url);
+};
+
 const updateApplicationStatus = async (user, applicationId, statusInput) => {
   const parsedId = parseApplicationId(applicationId);
   const status = validateApplicationStatus(statusInput);
@@ -424,6 +437,7 @@ module.exports = {
   createApplication,
   deleteApplication,
   getApplicationById,
+  getApplicationResumeUrl,
   listApplicationsByJob,
   listMyApplications,
   updateApplicationStatus,

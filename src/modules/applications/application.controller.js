@@ -7,6 +7,7 @@ const respondToError = (res, error, fallbackMessage) => {
   if (
     error.code === "APPLICATION_NOT_FOUND" ||
     error.code === "JOB_NOT_FOUND" ||
+    error.code === "RESUME_NOT_FOUND" ||
     error.code === "USER_NOT_FOUND"
   ) {
     return res.status(404).json({ success: false, message: error.message });
@@ -80,6 +81,22 @@ const getApplicationById = async (req, res) => {
   }
 };
 
+const getApplicationResume = async (req, res) => {
+  try {
+    const url = await applicationsService.getApplicationResumeUrl(
+      req.user,
+      req.params.id,
+    );
+    res.set("Cache-Control", "private, no-store");
+    return res.status(200).json({
+      success: true,
+      data: { url },
+    });
+  } catch (error) {
+    return respondToError(res, error, "Failed to fetch application resume");
+  }
+};
+
 const updateApplicationStatus = async (req, res) => {
   try {
     const { status } = req.body || {};
@@ -115,6 +132,7 @@ module.exports = {
   createApplication,
   deleteApplication,
   getApplicationById,
+  getApplicationResume,
   getApplicationsByJob,
   getMyApplications,
   updateApplicationStatus,

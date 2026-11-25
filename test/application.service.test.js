@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const pool = require("../src/config/db");
+const cloudinary = require("../src/config/cloudinary");
 const applicationService = require("../src/modules/applications/application.service");
 
 const candidate = { userId: 7, role: "CANDIDATE" };
@@ -53,6 +54,67 @@ test("candidate cannot apply twice to the same job", async () => {
       assert.equal(calls.length, 2);
     },
   );
+});
+
+test("candidate can get a short-lived URL for their own resume", async () => {
+  const originalPrivateDownloadUrl = cloudinary.utils.private_download_url;
+  const urls = [];
+  cloudinary.utils.private_download_url = (...args) => {
+    urls.push(args);
+    return "https://cloudinary.example/resume.pdf";
+  };
+
+  try {
+    await withExecuteMock(
+      [[[
+        applicationRow({
+          candidate_id: candidate.userId,
+          resume_url: "resumes/candidate-resume.pdf",
+        }),
+      ], []]],
+      async (calls) => {
+        const url = await applicationService.getApplicationResumeUrl(candidate, 35);
+
+        assert.equal(url, "https://cloudinary.example/resume.pdf");
+        assert.equal(calls.length, 1);
+        assert.deepEqual(calls[0][1], [candidate.userId, 35]);
+        assert.equal(urls[0][0], "resumes/candidate-resume.pdf");
+        assert.equal(urls[0][1], "pdf");
+        assert.equal(urls[0][2].resource_type, "raw");
+        assert.equal(urls[0][2].type, "authenticated");
+        assert.equal(urls[0][2].attachment, false);
+        assert.ok(urls[0][2].expires_at > Math.floor(Date.now() / 1000));
+      },
+    );
+  } finally {
+    cloudinary.utils.private_download_url = originalPrivateDownloadUrl;
+  }
+});
+
+test("candidate cannot get another candidate's resume URL", async () => {
+  const originalPrivateDownloadUrl = cloudinary.utils.private_download_url;
+  cloudinary.utils.private_download_url = () => {
+    throw new Error("Resume URL must not be generated for unauthorized users");
+  };
+
+  try {
+    await withExecuteMock(
+      [[[
+        applicationRow({
+          candidate_id: candidate.userId + 1,
+          resume_url: "resumes/another-candidate.pdf",
+        }),
+      ], []]],
+      async () => {
+        await assert.rejects(
+          applicationService.getApplicationResumeUrl(candidate, 35),
+          { code: "FORBIDDEN" },
+        );
+      },
+    );
+  } finally {
+    cloudinary.utils.private_download_url = originalPrivateDownloadUrl;
+  }
 });
 
 test("candidate cannot apply to a draft job", async () => {

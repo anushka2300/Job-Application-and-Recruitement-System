@@ -90,3 +90,10 @@ Candidates submit an application with `POST /api/applications` using
 in the `resume` field. Resume files are limited to 5 MB and uploaded to
 Cloudinary; the application record stores only the Cloudinary public ID, not the
 PDF contents.
+
+Authorized users can request a short-lived resume URL with
+`GET /api/applications/:id/resume`. The candidate can view their own resume;
+recruiters can view resumes for applications to jobs they created, admins can
+view resumes for applications in their company, and super admins can view all
+resumes. The response contains the temporary URL in `data.url`, which expires
+after five minutes.
